@@ -1,0 +1,10 @@
+
+[project]
+name = "hello"
+lang = "cpp"
+
+[config.cpp-lang]
+type = "exec"
+compiler = "g++"
+sources = ["./src/**/*.cc"]
+include = "./include"
