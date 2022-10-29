@@ -29,6 +29,11 @@ def create_cpp_folder(build_config):
     create_dir(os.path.join(cpp_folder, "files"))
 
 def compile_project(config):
+    include_args = []
+
+    for include in config["includes"]:
+        include_args.append("-I%s" % include)
+
     with tqdm(total=len(config["source_files"]), leave=False) as pbar:
         for file in config["source_files"]:
             if os.path.isfile(file):
@@ -56,6 +61,7 @@ def compile_project(config):
                     command.append("-shared")
                     command.append("-fPIC")
 
+                command += include_args
                 command.append("-c")
                 command.append(os.path.join(os.getcwd(), file))
                 command.append("-o")
@@ -105,6 +111,7 @@ def build(config):
         "project_name": "",
         "output": "",
         "output_type": "",
+        "includes": [],
         "source_files": [],
         "compiled_objects": [],
         "breeze_folder": config[".folder"]
@@ -140,6 +147,15 @@ def build(config):
             build_config["source_files"] += glob.glob(source, recursive=True)
     else:
         pass # TODO: error?
+
+    if cpp_lang_config.get("include", None) is not None:
+        if isinstance(cpp_lang_config["include"], str):
+            build_config["includes"].append(cpp_lang_config["include"])
+        elif isinstance(cpp_lang_config["include"], list):
+            for source in cpp_lang_config["include"]:
+                build_config["includes"].append(source, recursive=True)
+        else:
+            pass # TODO: error?
 
     compile_project(build_config)
 

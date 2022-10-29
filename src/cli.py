@@ -36,4 +36,5 @@ class CLI:
 
         build_project(config)
 
-        logger.info(f"Done building {config['project']['name']}!")
+        print("")
+        logger.success(f"Done building {config['project']['name']}! ✨")

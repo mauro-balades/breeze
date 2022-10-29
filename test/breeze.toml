@@ -7,3 +7,4 @@ lang = "cpp"
 type = "exec"
 compiler = "g++"
 sources = ["./src/**/*.cc"]
+include = "./include"
