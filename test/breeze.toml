@@ -1,0 +1,6 @@
+
+[project]
+name = "hello"
+lang = "c"
+
+[config.c-lang]
