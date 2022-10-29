@@ -1,6 +1,6 @@
 
 import os
-from cli.errors import ConfigurationError
+from src.errors import ConfigurationError
 
 BREEZE_FOLDER = ".breeze"
 

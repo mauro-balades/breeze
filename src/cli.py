@@ -1,9 +1,9 @@
 import argparse
 import toml
 
-from cli.errors import CommandNotFound
-from cli.build import build as build_project
-from cli import helpers
+from src.errors import CommandNotFound
+from src.build import build as build_project
+from src import helpers
 from .logger import *
 
 def get_arguments():

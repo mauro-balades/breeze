@@ -7,13 +7,13 @@ except IOError:
     long_description = ""
 
 setup(
-    name="breeze",
+    name="breeze-build",
     version="0.1.0",
     description="Breeze is a light-weight, highly-customizable build tool for different languages such as C(++) and Java",
     license="MIT",
     entry_points={
         'console_scripts': [
-            "breeze = cli:main"
+            "breeze = src:main"
         ]
     },
     author_email='mauro.balades@tutanota.com',
