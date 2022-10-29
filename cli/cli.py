@@ -2,8 +2,8 @@ import argparse
 import toml
 
 from cli.errors import CommandNotFound
-from cli import helpers
 from cli.build import build as build_project
+from cli import helpers
 from .logger import *
 
 def get_arguments():
@@ -30,6 +30,10 @@ class CLI:
         helpers.check_config(config)
 
         logger.info(f"Building project for {config['project']['lang']}")
+
+        folder = helpers.create_breeze_folder()
+        config[".folder"] = folder
+
         build_project(config)
 
         logger.info(f"Done building {config['project']['name']}!")

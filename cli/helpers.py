@@ -1,20 +1,29 @@
 
+import os
 from cli.errors import ConfigurationError
 
+BREEZE_FOLDER = ".breeze"
+
+def assert_dict(cfg, field, name = None):
+    if name is None:
+        name = field
+
+    value = cfg.get(field, None)
+    if value is None or value == "":
+        raise ConfigurationError(f"Field '{name}' required in config file")
+
+def create_breeze_folder():
+    if not os.path.exists(BREEZE_FOLDER):
+        os.mkdir(BREEZE_FOLDER)
+
+    return BREEZE_FOLDER
+
 def check_config(config: dict):
-    def assert_dict(cfg, field, name = None):
-        if name is None:
-            name = field
-
-        value = cfg.get(field, None)
-        if value is None or value == "":
-            raise ConfigurationError(f"Field '{name}' required in config file")
-
     assert_dict(config, "project")
 
     assert_dict(config["project"], "name", "project.name")
     assert_dict(config["project"], "lang", "project.lang")
 
-    if (config["project"]["lang"] != "c" and
-        config["project"]["lang"] != "cpp"):
-        raise ConfigurationError(f"Language {config['project']['lang']} not supported!")
+    folder = config.get(".folder", None)
+    if folder is not None:
+        raise ConfigurationError("Field '.folder' can't exist at top level of config file")

@@ -5,3 +5,4 @@ lang = "cpp"
 
 [config.cpp-lang]
 compiler = "clang++"
+sources = ["./src/*.cc"]
