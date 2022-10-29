@@ -4,5 +4,6 @@ name = "hello"
 lang = "cpp"
 
 [config.cpp-lang]
-compiler = "clang++"
-sources = ["./src/*.cc"]
+type = "exec"
+compiler = "g++"
+sources = ["./src/**/*.cc"]
