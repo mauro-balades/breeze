@@ -12,7 +12,6 @@ def main():
 
     cli = CLI()
 
-
     try:
         cli.execute(args.command, args)
     except Exception as e:
