@@ -1,6 +1,10 @@
 import argparse
+import toml
 
 from cli.errors import CommandNotFound
+from cli import helpers
+from cli.build import build as build_project
+from .logger import *
 
 def get_arguments():
     args_parser = argparse.ArgumentParser()
@@ -20,4 +24,12 @@ class CLI:
             raise CommandNotFound(f"Command '{command}' not found!")
 
     def build(argv):
-        print("")
+
+        logger.info(f"Opening configuration file ({argv.config})")
+        config = toml.load(open(argv.config))
+        helpers.check_config(config)
+
+        logger.info(f"Building project for {config['project']['lang']}")
+        build_project(config)
+
+        logger.info(f"Done building {config['project']['name']}!")

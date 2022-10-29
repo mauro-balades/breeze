@@ -1,6 +1,7 @@
 
 [project]
 name = "hello"
-lang = "c"
+lang = "cpp"
 
-[config.c-lang]
+[config.cpp-lang]
+compiler = "clang++"

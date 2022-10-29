@@ -1,5 +1,6 @@
 
 from .cli import CLI, get_arguments
+from .logger import *
 
 def main():
 
@@ -10,7 +11,11 @@ def main():
         return
 
     cli = CLI()
-    cli.execute(args.command, args)
 
 
+    try:
+        cli.execute(args.command, args)
+    except Exception as e:
+        logger.error(str(e))
+        exit(1)
 
