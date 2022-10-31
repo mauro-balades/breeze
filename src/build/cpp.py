@@ -1,9 +1,11 @@
 
+import time
 from tqdm import tqdm
 
 import os
 import glob
 import subprocess
+from src.build.build_utils import can_compile
 from src.errors import UnknownOutputType
 from src.logger import *
 
@@ -50,26 +52,27 @@ def compile_project(config):
                 full_path = os.path.join(os.getcwd(), full_folder, os.path.basename(file) + ".o")
                 config["compiled_objects"].append(full_path)
 
-                pbar.set_description("[%s]: Compiling %s" % (logger.prefix.info, file))
+                if can_compile(file, full_path):
 
-                command = []
+                    pbar.set_description("[%s]: Compiling %s" % (logger.prefix.info, file))
 
-                command.append(config["compiler"])
-                command += config["compiler_flags"]
+                    command = []
 
-                if config["output_type"] == "lib":
-                    command.append("-shared")
-                    command.append("-fPIC")
+                    command.append(config["compiler"])
+                    command += config["compiler_flags"]
 
-                command += include_args
-                command.append("-c")
-                command.append(os.path.join(os.getcwd(), file))
-                command.append("-o")
-                command.append(full_path)
+                    if config["output_type"] == "lib":
+                        command.append("-shared")
+                        command.append("-fPIC")
 
-                subprocess.run(command, check=True)
+                    command += include_args
+                    command.append("-c")
+                    command.append(os.path.join(os.getcwd(), file))
+                    command.append("-o")
+                    command.append(full_path)
 
-                pbar.update(1)
+                    subprocess.run(command, check=True)
+                    pbar.update(1)
 
             else:
                 raise Exception(f"'{file}' is not a file!")
@@ -130,15 +133,15 @@ def build(config):
         compiler = find_default_compiler()
 
     output_type = cpp_lang_config["type"]
-    if (output_type != "exec" and
-        output_type != "lib"):
-        raise UnknownOutputType(f"Output type '{output_type}' is not supported")
 
     create_cpp_folder(build_config)
 
     build_config["compiler"] = compiler
     build_config["output_type"] = output_type
     build_config["project_name"] = config["project"]["name"]
+
+    build_config["linker_flags"] = cpp_lang_config.get("linker_flags", "")
+    build_config["compiler_flags"] = cpp_lang_config.get("compiler_flags", "")
 
     if isinstance(cpp_lang_config["sources"], str):
         build_config["source_files"] += glob.glob(cpp_lang_config["sources"], recursive=True)
@@ -165,3 +168,5 @@ def build(config):
     elif output_type == "lib":
         build_config["output"] = cpp_lang_config.get("output", "a.so")
         emit_library(build_config)
+    else:
+        raise UnknownOutputType(f"Output type '{output_type}' is not supported")
