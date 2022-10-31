@@ -24,6 +24,3 @@ def check_config(config: dict):
     assert_dict(config["project"], "name", "project.name")
     assert_dict(config["project"], "lang", "project.lang")
 
-    folder = config.get(".folder", None)
-    if folder is not None:
-        raise ConfigurationError("Field '.folder' can't exist at top level of config file")

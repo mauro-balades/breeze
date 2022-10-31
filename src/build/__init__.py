@@ -1,9 +1,11 @@
 
 from src.errors import ConfigurationError
 from .cpp import build as cpp
+from .c   import build as c
 
 native_langs = {
-    "cpp": cpp
+    "c": c,
+    "cpp": cpp,
 }
 
 def build(config):
