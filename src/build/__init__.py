@@ -9,9 +9,19 @@ native_langs = {
 }
 
 def build(config):
-    method = native_langs.get(config["project"]["lang"], None)
+    lang = config["project"]["lang"]
+    method = native_langs.get(lang, None)
 
     if method is None:
-        raise ConfigurationError(f"Language {config['project']['lang']} not supported!")
+
+        try:
+            imported_lang = __import__(f"breeze-{lang}")
+            method = imported_lang.get("breeze_build", None)
+
+            if method is None:
+                raise ConfigurationError(f"Language support for {lang} does not have a 'breeze_build' function exported!")
+
+        except ImportError:
+            raise ConfigurationError(f"Language {lang} not supported! \n  note: try executing \"pip3 install breeze-{lang}\"")
 
     method(config)

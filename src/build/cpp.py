@@ -5,7 +5,7 @@ from tqdm import tqdm
 import os
 import glob
 import subprocess
-from src.build.build_utils import can_compile
+from src.utils.build_utils import can_compile
 from src.errors import UnknownOutputType
 from src.logger import *
 
