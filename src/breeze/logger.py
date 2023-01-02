@@ -1,8 +1,7 @@
 from termcolor import colored
 
-
 class _logger:
-    
+
     _BREEZE_CAN_DEBUG = False
 
     class prefix:
