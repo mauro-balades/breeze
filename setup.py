@@ -13,7 +13,7 @@ setup(
     license="MIT",
     entry_points={
         'console_scripts': [
-            "breeze = src.breeze:main"
+            "breeze = breeze:main"
         ]
     },
     author_email='mauro.balades@tutanota.com',

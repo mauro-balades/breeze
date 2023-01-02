@@ -18,7 +18,7 @@ def build(config):
 
         try:
             imported_lang = importlib.import_module(f"breeze_{lang}")
-            method = imported_lang.get("breeze_build", None)
+            method = imported_lang.breeze_build()
 
             if method is None:
                 raise ConfigurationError(f"Language support for {lang} does not have a 'breeze_build' function exported!")
