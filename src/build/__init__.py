@@ -3,6 +3,8 @@ from src.errors import ConfigurationError
 from .cpp import build as cpp
 from .c   import build as c
 
+import importlib
+
 native_langs = {
     "c": c,
     "cpp": cpp,
@@ -15,7 +17,7 @@ def build(config):
     if method is None:
 
         try:
-            imported_lang = __import__(f"breeze-{lang}")
+            imported_lang = importlib.import_module(f"breeze-{lang}")
             method = imported_lang.get("breeze_build", None)
 
             if method is None:
