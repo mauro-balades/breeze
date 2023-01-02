@@ -8,7 +8,7 @@ except IOError:
 
 setup(
     name="breeze-build",
-    version="0.1.2",
+    version="0.1.3",
     description="Breeze is a light-weight, highly-customizable build tool for different languages such as C(++) and Java",
     license="MIT",
     entry_points={
