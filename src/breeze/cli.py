@@ -1,9 +1,9 @@
 import argparse
 import toml
 
-from src.errors import CommandNotFound
-from src.build import build as build_project
-from src import helpers
+from breeze.errors import CommandNotFound
+from breeze.build import build as build_project
+from breeze import helpers
 from .logger import *
 
 def get_arguments():

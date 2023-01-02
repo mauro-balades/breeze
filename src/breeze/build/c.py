@@ -5,30 +5,30 @@ from tqdm import tqdm
 import os
 import glob
 import subprocess
-from src.build.build_utils import can_compile
-from src.errors import UnknownOutputType
-from src.logger import *
+from breeze.utils.build_utils import can_compile
+from breeze.errors import UnknownOutputType
+from breeze.logger import *
 
-from src.helpers import assert_dict
+from breeze.helpers import assert_dict
 
 def find_default_compiler():
     # TODO: https://cmake.org/pipermail/cmake/2013-March/053819.html
-    return "g++"
+    return "gcc"
 
-def create_cpp_folder(build_config):
+def create_c_folder(build_config):
     def create_dir(dir: str):
         if not os.path.exists(dir):
             os.mkdir(dir)
 
-    cpp_folder = os.path.join(build_config["breeze_folder"], ".cpp")
-    create_dir(cpp_folder)
+    c_folder = os.path.join(build_config["breeze_folder"], ".c")
+    create_dir(c_folder)
 
-    cpp_folder = os.path.join(cpp_folder, build_config["project_name"])
-    create_dir(cpp_folder)
+    c_folder = os.path.join(c_folder, build_config["project_name"])
+    create_dir(c_folder)
 
-    create_dir(os.path.join(cpp_folder, "cache"))
-    create_dir(os.path.join(cpp_folder, "config"))
-    create_dir(os.path.join(cpp_folder, "files"))
+    create_dir(os.path.join(c_folder, "cache"))
+    create_dir(os.path.join(c_folder, "config"))
+    create_dir(os.path.join(c_folder, "files"))
 
 def compile_project(config):
     include_args = []
@@ -40,7 +40,7 @@ def compile_project(config):
     with tqdm(total=len(config["source_files"]), leave=False) as pbar:
         for file in config["source_files"]:
             if os.path.isfile(file):
-                full_folder = os.path.join(config["breeze_folder"], ".cpp", "files")
+                full_folder = os.path.join(config["breeze_folder"], ".c", "files")
                 for folder in file.split(os.path.sep)[:-1]:
                     if folder == ".": continue
 
@@ -133,45 +133,45 @@ def build(config):
     logger.verbose("Fetching necesary information")
 
     assert_dict(config, "config")
-    assert_dict(config["config"], "cpp-lang")
+    assert_dict(config["config"], "c-lang")
 
-    cpp_lang_config = config["config"]["cpp-lang"]
+    c_lang_config = config["config"]["c-lang"]
 
-    assert_dict(cpp_lang_config, "sources", "config.cpp-lang.sources")
-    assert_dict(cpp_lang_config, "type", "config.cpp-lang.type")
+    assert_dict(c_lang_config, "sources", "config.c-lang.sources")
+    assert_dict(c_lang_config, "type", "config.c-lang.type")
 
-    compiler = cpp_lang_config.get("compiler", None)
+    compiler = c_lang_config.get("compiler", None)
     if compiler is None:
         compiler = find_default_compiler()
 
-    output_type = cpp_lang_config["type"]
+    output_type = c_lang_config["type"]
 
-    create_cpp_folder(build_config)
+    create_c_folder(build_config)
 
     build_config["compiler"] = compiler
     build_config["output_type"] = output_type
     build_config["project_name"] = config["project"]["name"]
 
-    build_config["linker_flags"] = cpp_lang_config.get("linker_flags", "")
-    build_config["compiler_flags"] = cpp_lang_config.get("compiler_flags", "")
+    build_config["linker_flags"] = c_lang_config.get("linker_flags", "")
+    build_config["compiler_flags"] = c_lang_config.get("compiler_flags", "")
 
     logger.verbose("Retrieving source files")
 
-    if isinstance(cpp_lang_config["sources"], str):
-        build_config["source_files"] += glob.glob(cpp_lang_config["sources"], recursive=True)
-    elif isinstance(cpp_lang_config["sources"], list):
-        for source in cpp_lang_config["sources"]:
+    if isinstance(c_lang_config["sources"], str):
+        build_config["source_files"] += glob.glob(c_lang_config["sources"], recursive=True)
+    elif isinstance(c_lang_config["sources"], list):
+        for source in c_lang_config["sources"]:
             build_config["source_files"] += glob.glob(source, recursive=True)
     else:
         pass # TODO: error?
 
     logger.verbose("Retrieving header files")
 
-    if cpp_lang_config.get("include", None) is not None:
-        if isinstance(cpp_lang_config["include"], str):
-            build_config["includes"].append(cpp_lang_config["include"])
-        elif isinstance(cpp_lang_config["include"], list):
-            for source in cpp_lang_config["include"]:
+    if c_lang_config.get("include", None) is not None:
+        if isinstance(c_lang_config["include"], str):
+            build_config["includes"].append(c_lang_config["include"])
+        elif isinstance(c_lang_config["include"], list):
+            for source in c_lang_config["include"]:
                 build_config["includes"].append(source, recursive=True)
         else:
             pass # TODO: error?
@@ -180,11 +180,11 @@ def build(config):
 
     if output_type == "exec":
         logger.verbose("Compiling executable...")
-        build_config["output"] = cpp_lang_config.get("output", "a.out")
+        build_config["output"] = c_lang_config.get("output", "a.out")
         link_objects(build_config)
     elif output_type == "lib":
         logger.verbose("Compiling library...")
-        build_config["output"] = cpp_lang_config.get("output", "a.so")
+        build_config["output"] = c_lang_config.get("output", "a.so")
         emit_library(build_config)
     else:
         raise UnknownOutputType(f"Output type '{output_type}' is not supported")
