@@ -1,6 +1,10 @@
 #include <stdio.h>
-#include "lexer.h"
+#include "Lexer.h"
 
 int main() {
-    printf("Hey\n");
+    const char* source = "hey";
+
+    Lexer* lexer = lexer_init(source);
+    lexer_tokenize(lexer);
+
 }
