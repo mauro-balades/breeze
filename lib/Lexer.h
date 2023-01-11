@@ -12,10 +12,13 @@ typedef struct
 	size_t tok_count;
 	size_t tok_capacity;
 
-    const char* current_char;
-    size_t current_tok_index;
+    char current_char;
 
     const char* source;
+    const char* old_source;
+
+    size_t line;
+    size_t col;
 } Lexer;
 
 Lexer* lexer_init(const char* p_source);

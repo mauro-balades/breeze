@@ -63,3 +63,4 @@ CTestTestfile.cmake
 _deps
 
 breeze
+.vscode/
