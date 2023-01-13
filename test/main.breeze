@@ -1,2 +1,4 @@
 
-awd
+binary(
+    sources=[glob("/src/*.rct")]
+)

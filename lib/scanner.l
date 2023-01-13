@@ -22,6 +22,7 @@ ES  (\\(['"\?\\abfnrtv]|[0-7]{1,3}|x[a-fA-F0-9]+))
 WS  [ \t\v\n\f]
 
 %{
+
 #include <stdio.h>
 #include "y.tab.h"
 
@@ -110,13 +111,5 @@ int yywrap(void)        /* called at end of input */ {
 }
 
 static int check_type(void) {
-    switch (sym_type(yytext))
-    {
-    case TYPEDEF_NAME:                /* previously defined */
-        return TYPEDEF_NAME;
-    case ENUMERATION_CONSTANT:        /* previously defined */
-        return ENUMERATION_CONSTANT;
-    default:                          /* includes undefined */
-        return IDENTIFIER;
-    }
+    return IDENTIFIER;
 }

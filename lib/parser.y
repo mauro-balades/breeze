@@ -12,18 +12,61 @@ int yyerror(char *s);
 %token	SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
 %token	XOR_ASSIGN OR_ASSIGN
 
+%start prog
 %%
 
-prog
-    : stmts
-    ;
-
-stmts:
-    | stmt stmts
+prog:
+    | prog stmt
     ;
 
 stmt
-    : 
+    : /*TODo*/
+    | expr
+    ;
+
+expr
+    : function_call
+    | IDENTIFIER
+    | I_CONSTANT
+    | F_CONSTANT
+    | STRING_LITERAL
+    | array_expr
+    ;
+
+// expressions
+
+array_expr
+    : '[' array_body ']'
+    ;
+
+array_body
+    : /* empty */
+    | array_inner_exprs
+    ;
+
+array_inner_exprs
+    : expr
+    | function_exprs ',' expr
+    ;
+
+
+// statements
+
+function_call
+    : IDENTIFIER '(' function_arguments ')'
+    ;
+
+function_arguments
+    : /* empty */
+    | function_exprs
+
+function_exprs
+    : function_exprs_dec
+    | function_exprs ',' function_exprs_dec
+
+function_exprs_dec
+    : IDENTIFIER '=' expr
+    | expr
     ;
 
 %%
@@ -32,10 +75,4 @@ int yyerror(char *s)
 {
 	printf("Syntax Error on line %s\n", s);
 	return 0;
-}
-
-int main()
-{
-    yyparse();
-    return 0;
 }
