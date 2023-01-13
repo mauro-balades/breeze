@@ -19,4 +19,3 @@ void *brz_realloc(void *p, size_t n)
 
 	return new_p;
 }
-

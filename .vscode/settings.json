@@ -97,7 +97,10 @@
         "source_location": "cpp",
         "charconv": "cpp",
         "stdlib.h": "c",
-        "cxxabi.h": "c"
+        "cxxabi.h": "c",
+        "utils.h": "c",
+        "export.h": "c",
+        "lexer.h": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled",
     "todo-tree.tree.scanMode": "workspace"

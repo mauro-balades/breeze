@@ -64,3 +64,7 @@ _deps
 
 breeze
 .vscode/
+
+lib/scanner.c
+lib/parser.c
+lib/y.tab.h

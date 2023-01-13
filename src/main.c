@@ -1,10 +1,14 @@
 #include <stdio.h>
-#include "Lexer.h"
+#include "lexer.h"
 
-int main() {
-    const char* source = "hey";
+int main(int argc, char* argv[]) {
+    yyin = fopen(argv[1], "r");
+    if(!yyin) {
+        printf("couldn't open file for reading\n");
+        return 1;
+    }
 
-    Lexer* lexer = lexer_init(source);
-    lexer_tokenize(lexer);
+    yydebug = 1;
+    return yyparse();
 
 }

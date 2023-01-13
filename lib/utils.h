@@ -19,6 +19,8 @@
 #define BRZ_WARNING_HEADER BRZ_ANSI_CLR_WARNING "warning: " BRZ_ANSI_CLR_RESET
 #define BRZ_ERROR_HEADER   BRZ_ANSI_CLR_ERROR   "error: "   BRZ_ANSI_CLR_RESET
 
+#define BRZ_ERROR_BUFF_SIZE 255
+
 #define BRZ_INTERNAL_ERROR() \
     printf(BRZ_ERROR_HEADER "Internal breeze error"); \
     exit(2);
