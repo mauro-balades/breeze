@@ -11,11 +11,19 @@ int yyerror(char *s);
 
 %}
 
+%union {
+    FnCall* call;
+}
+
 %token	IDENTIFIER I_CONSTANT F_CONSTANT STRING_LITERAL
 %token	PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
 %token	AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
 %token	SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
 %token	XOR_ASSIGN OR_ASSIGN
+
+%token<call> function_call
+
+%token
 
 %start prog
 %%
@@ -59,7 +67,9 @@ array_inner_exprs
 
 function_call
     : IDENTIFIER '(' function_arguments ')' {
-        $$ = 
+        FnCall* f = malloc(sizeof FnCall);
+        f->name = $1;
+        $$ = f;
     }
     ;
 
