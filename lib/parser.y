@@ -1,5 +1,10 @@
 %{
 #include <stdio.h>
+#include "nodes/all.h"
+
+#include "utils/array.h"
+
+Array* ast = initArray(0); /* the top level root node of our final AST */
 
 int yylex();
 int yyerror(char *s);
@@ -53,7 +58,9 @@ array_inner_exprs
 // statements
 
 function_call
-    : IDENTIFIER '(' function_arguments ')'
+    : IDENTIFIER '(' function_arguments ')' {
+        $$ = 
+    }
     ;
 
 function_arguments
