@@ -13,6 +13,11 @@ int yyerror(char *s);
 
 %union {
     FnCall* call;
+    Array* block;
+    Node* stmt;
+    Node* expr;
+
+    char* str;
 }
 
 %token	IDENTIFIER I_CONSTANT F_CONSTANT STRING_LITERAL
@@ -21,15 +26,21 @@ int yyerror(char *s);
 %token	SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
 %token	XOR_ASSIGN OR_ASSIGN
 
-%token<call> function_call
 
-%token
+%type <stmt> function_call
+%type <block> global stmts
+%type <stmt> stmt
 
-%start prog
+%start global
 %%
 
-prog:
-    | prog stmt
+global
+    : stmts { programBlock = $1; }
+    ;
+
+stmts
+    : stmt { $$ = initArray(); insertArray($$, $<stmt>1); }
+    | stmts stmt { insertArray($1, $<stmt>2); }
     ;
 
 stmt
@@ -67,9 +78,8 @@ array_inner_exprs
 
 function_call
     : IDENTIFIER '(' function_arguments ')' {
-        FnCall* f = malloc(sizeof FnCall);
-        f->name = $1;
-        $$ = f;
+        $$ = malloc(sizeof FnCall);
+        $$->name = $<str>1;
     }
     ;
 
