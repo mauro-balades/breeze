@@ -5,15 +5,15 @@
 #ifndef __BREEZE_NODE_FUNCTION_CALL_H_
 #define __BREEZE_NODE_FUNCTION_CALL_H_
 
-struct FnCall
+typedef struct FnCall
 {
     union {
-      struct NodeBase base;
+      struct Node* base;
     } base;
     
     const char* name;
     
-};
+} FnCall;
 
 
 #endif // __BREEZE_NODE_FUNCTION_CALL_H_

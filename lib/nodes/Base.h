@@ -8,10 +8,8 @@ typedef enum {
     Unknown = -1
 } NodeType;
 
-typedef struct {
+typedef struct Node {
     NodeType type;
-} NodeBase;
-
-
+} Node;
 
 #endif // __BREEZE_NODE_BASE_H_

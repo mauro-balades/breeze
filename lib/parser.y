@@ -1,10 +1,11 @@
 %{
 #include <stdio.h>
-#include "nodes/all.h"
+#include "nodes/Base.h"
+#include "nodes/FnCall.h"
 
-#include "utils/array.h"
+#include "array/array.h"
 
-Array* ast = initArray(0); /* the top level root node of our final AST */
+Array* ast; /* the top level root node of our final AST */
 
 int yylex();
 int yyerror(char *s);
@@ -12,10 +13,10 @@ int yyerror(char *s);
 %}
 
 %union {
-    FnCall* call;
-    Array* block;
-    Node* stmt;
-    Node* expr;
+    struct FnCall* call;
+    struct Array* block;
+    struct Node* stmt;
+    struct Node* expr;
 
     char* str;
 }
@@ -26,7 +27,6 @@ int yyerror(char *s);
 %token	SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
 %token	XOR_ASSIGN OR_ASSIGN
 
-
 %type <stmt> function_call
 %type <block> global stmts
 %type <stmt> stmt
@@ -35,11 +35,11 @@ int yyerror(char *s);
 %%
 
 global
-    : stmts { programBlock = $1; }
+    : stmts { ast = initArray(0); insertArray(ast, $1); }
     ;
 
 stmts
-    : stmt { $$ = initArray(); insertArray($$, $<stmt>1); }
+    : stmt { $$ = initArray(0); insertArray($$, $<stmt>1); }
     | stmts stmt { insertArray($1, $<stmt>2); }
     ;
 
@@ -78,8 +78,10 @@ array_inner_exprs
 
 function_call
     : IDENTIFIER '(' function_arguments ')' {
-        $$ = malloc(sizeof FnCall);
-        $$->name = $<str>1;
+        FnCall* c = (FnCall*)malloc(sizeof (FnCall));
+        c->name = $<str>1;
+
+        $$ = c;
     }
     ;
 
