@@ -4,7 +4,20 @@ use breeze::nodes::Node;
 grammar;
 
 RootNodes: Node = {
+    Task
 }
+
+Statement: Node = {
+}
+
+Block: Vec<Node> = {
+    Statement*
+}
+
+Task: Node = {
+    "task" <name:ident>  "{" <block:Block> "}" => Node::Task(name, block)
+}
+
 
 pub Breeze: Vec<Node> = {
     RootNodes*
