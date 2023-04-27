@@ -1,4 +1,0 @@
-
-binary(
-    sources=[glob("/src/*.rct")]
-)
