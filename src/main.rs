@@ -1,12 +1,10 @@
+
 use clap::Parser as CLIParser;
 use std::path::Path;
-use breeze::{nodes::AST, project::ProjectInfo, runner::execute_ast};
+use breeze::{nodes::AST, project::ProjectInfo, runner::Runner, parser};
 use label_logger::{info, log, success};
 
 use std::fs;
-
-#[macro_use] extern crate lalrpop_util;
-lalrpop_mod!(pub parser); // synthesized by LALRPOP
 
 /// Simple program to greet a person
 #[derive(CLIParser, Debug)]
@@ -32,7 +30,6 @@ pub fn main() -> std::io::Result<()> {
 
     let ast = AST::new(project, v);
     success!(label: "Building", "Project {} with version '{}'", ast.project.name, ast.project.version);
-
 
     Runner::new(ast, args.method).execute_ast();
     Ok(())

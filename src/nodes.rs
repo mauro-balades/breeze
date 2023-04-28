@@ -1,7 +1,7 @@
 
 use crate::project::ProjectInfo;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct AST {
     pub nodes: Vec<Node>,
     pub project: ProjectInfo
@@ -16,8 +16,14 @@ impl AST {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Node {
     Task(String, Vec<Node>),
-    DefaultTask(String)
+    DefaultTask(String),
+    Command(Expr)
+}
+
+#[derive(Debug, Clone)]
+pub enum Expr {
+    String(String)
 }

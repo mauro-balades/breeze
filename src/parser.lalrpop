@@ -1,6 +1,6 @@
 use std::str::FromStr;
-use breeze::nodes::{{ Node }};
-use breeze::project::ProjectInfo;
+use crate::nodes::{{ Node, Expr }};
+use crate::project::ProjectInfo;
 
 grammar;
 
@@ -13,11 +13,24 @@ RootHeader: ProjectInfo = {
         => ProjectInfo::from((name, version))
 }
 
+Command: Node = {
+    "exec" <s:StringExpr> => Node::Command(s)
+}
+
 Statement: Node = {
+    Command,
 }
 
 Block: Vec<Node> = {
     Statement*
+}
+
+StringExpr: Expr = {
+    <s:string> => Expr::String(s)
+}
+
+Expr: Expr = {
+    StringExpr
 }
 
 DefaultTask: Node = {
@@ -40,4 +53,4 @@ string: String = r#"".*""# => {
     chars.next_back();
     chars.as_str().to_string()
 };
-ident: String = r"[a-zA-Z][a-zA-Z0-9_-]*" => <>.to_string();
+pub ident: String = r"[a-zA-Z][a-zA-Z0-9_-]*" => <>.to_string();

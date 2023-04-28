@@ -1,9 +1,17 @@
-use std::collections::HashMap;
-use crate::nodes::{{ AST, Node }};
+use std::{collections::HashMap, process::exit};
+use crate::nodes::{{ AST, Node }, Expr};
+
+use lazy_static;
 
 use label_logger::{{ error }};
+use regex::Regex;
 
-struct Runner {
+lazy_static! {
+    static ref STRING_IDENTIFIER_REGEX: Regex = Regex::new(r"[^$]\$\{[a-zA-Z][a-zA-Z0-9_-]*\}").unwrap();
+}
+
+#[derive(Debug, Clone)]
+pub struct Runner {
     ast: AST,
     method: String,
 
@@ -14,6 +22,7 @@ struct Runner {
 impl Runner {
     fn throw_error(error: String /* TODO: line, col, etc */) {
         error!(label: "Execution error", "{}", error);
+        exit(0);
     }
 
     pub fn new(ast: AST, method: String) -> Runner {
@@ -25,8 +34,8 @@ impl Runner {
         }
     }
 
-    fn execute_ast(&mut self) {
-        let nodes = self.ast.nodes;
+    pub fn execute_ast(&mut self) {
+        let nodes = &self.ast.nodes;
 
         let mut defaultTask: String = "".to_string();
         for node in nodes {
@@ -36,7 +45,7 @@ impl Runner {
                         Self::throw_error(format!("Task '{}' has already been defined!", name));
                     }
 
-                    self.tasks.insert(name.to_string(), node);
+                    self.tasks.insert(name.to_string(), node.clone());
                 },
     
                 Node::DefaultTask(ref name) => {
@@ -68,20 +77,66 @@ impl Runner {
         }
     
         let executed_task = self.tasks.get(&self.method).unwrap();
-        self.execute_task(executed_task);
+        self.clone().execute_task(executed_task);
     }
 
-    // fn execute_expr(self, )
-
-    fn execute_block(self, block: &Vec<Node>) {
-        for node in block {
-            match node {
-                _ => panic!("Invalid node parsed!")
+    fn get_variable(&self, var: String) -> String {
+        let mut value: Option<String> = Option::None;
+        for scope in &self.scopes {
+            if (scope.contains_key(&var)) {
+                value = scope.get(&var).cloned();
             }
+        }
+
+
+        if value.is_none() {
+            Self::throw_error(format!("No variable with name '{}' has been found!", var));
+        }
+
+        value.unwrap()
+    }
+
+    fn execute_expr(&self, expr: &Expr) -> String {
+        match expr {
+            Expr::String(s) => {
+                // STRING_IDENTIFIER_REGEX.
+                let output = STRING_IDENTIFIER_REGEX.replace_all(s, |captures: &regex::Captures| {
+                    let matched_word = &mut captures[0].to_string(); // get the matched word
+
+                    matched_word.remove(0);
+                    matched_word.remove(0);
+                    matched_word.remove(0);
+
+                    matched_word.pop();
+
+                    self.get_variable(matched_word.to_string())
+                });
+
+                println!("s: {}", output);
+                output.to_string()
+            },
+
+            _ => panic!("Invalid expression given!")
         }
     }
 
-    fn execute_task(self, executed_task: &Node) {
+    fn execute_block(&mut self, block: &Vec<Node>) {
+        self.scopes.insert(0, HashMap::new());
+
+        for node in block {
+            match node {
+                Node::Command(expr) => {
+                    let val = self.execute_expr(expr);
+                },
+
+                _ => panic!("Invalid node parsed!")
+            }
+        }
+
+        self.scopes.remove(0);
+    }
+
+    fn execute_task(mut self, executed_task: &Node) {
         match executed_task {
             // It should only be this task
             Node::Task(ref name, ref nodes) => {

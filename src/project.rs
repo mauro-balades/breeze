@@ -1,5 +1,5 @@
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ProjectInfo {
     pub name: String,
     pub version: String

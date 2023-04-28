@@ -104,6 +104,7 @@ dependencies = [
  "label-logger",
  "lalrpop",
  "lalrpop-util",
+ "lazy_static",
  "regex",
 ]
 
