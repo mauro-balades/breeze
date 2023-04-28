@@ -5,10 +5,10 @@ use breeze::project::ProjectInfo;
 grammar;
 
 RootNodes: Node = {
-    Task
+    Task, DefaultTask
 }
 
-RootHeader: (ProjectInfo) = {
+RootHeader: ProjectInfo = {
     "project" <name:ident> "version" <version:string> ";"
         => ProjectInfo::from((name, version))
 }
@@ -18,6 +18,10 @@ Statement: Node = {
 
 Block: Vec<Node> = {
     Statement*
+}
+
+DefaultTask: Node = {
+    "default_task" <name:ident> => Node::DefaultTask(name)
 }
 
 Task: Node = {

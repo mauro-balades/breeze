@@ -1,8 +1,8 @@
 
 #[derive(Debug)]
 pub struct ProjectInfo {
-    name: String,
-    version: String
+    pub name: String,
+    pub version: String
 }
 
 impl ProjectInfo {

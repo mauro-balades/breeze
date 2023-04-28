@@ -3,8 +3,8 @@ use crate::project::ProjectInfo;
 
 #[derive(Debug)]
 pub struct AST {
-    nodes: Vec<Node>,
-    project: ProjectInfo
+    pub nodes: Vec<Node>,
+    pub project: ProjectInfo
 }
 
 impl AST {
@@ -18,5 +18,6 @@ impl AST {
 
 #[derive(Debug)]
 pub enum Node {
-    Task(String, Vec<Node>)
+    Task(String, Vec<Node>),
+    DefaultTask(String)
 }
