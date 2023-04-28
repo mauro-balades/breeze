@@ -34,6 +34,6 @@ pub fn main() -> std::io::Result<()> {
     success!(label: "Building", "Project {} with version '{}'", ast.project.name, ast.project.version);
 
 
-    execute_ast(ast, args.method);
+    Runner::new(ast, args.method).execute_ast();
     Ok(())
 }
