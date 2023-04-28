@@ -5,7 +5,7 @@ use crate::project::ProjectInfo;
 grammar;
 
 RootNodes: Node = {
-    Task, DefaultTask
+    Task, DefaultTask, VariableDecl
 }
 
 RootHeader: ProjectInfo = {
@@ -19,6 +19,10 @@ Command: Node = {
 
 Statement: Node = {
     Command,
+}
+
+VariableDecl: Node = {
+    "set" <name:variable> <e:Expr> => Node::VariableDecl(name, e)
 }
 
 Block: Vec<Node> = {
@@ -53,4 +57,6 @@ string: String = r#"".*""# => {
     chars.next_back();
     chars.as_str().to_string()
 };
+
 pub ident: String = r"[a-zA-Z][a-zA-Z0-9_-]*" => <>.to_string();
+pub variable: String = r"\$[a-zA-Z][a-zA-Z0-9_-]*" => <>.to_string();

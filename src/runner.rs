@@ -34,11 +34,11 @@ impl Runner {
         }
     }
 
-    pub fn execute_ast(&mut self) {
-        let nodes = &self.ast.nodes;
+    pub fn execute_ast(&mut self) -> Result<(), &'static str> {
 
         let mut defaultTask: String = "".to_string();
-        for node in nodes {
+        let mut clone = self.clone();
+        for node in &mut self.ast.nodes {
             match node {
                 Node::Task(ref name, _) => {
                     if self.tasks.contains_key(name) {
@@ -59,6 +59,11 @@ impl Runner {
     
                     defaultTask = name.to_string();
                 },
+
+                Node::VariableDecl(ref n, ref e) => {
+                    let expr = clone.execute_expr(e).unwrap();
+                    clone.generate_variable(n.to_string(), &expr);
+                },
     
                 _ => panic!("what")
             }
@@ -77,26 +82,41 @@ impl Runner {
         }
     
         let executed_task = self.tasks.get(&self.method).unwrap();
-        self.clone().execute_task(executed_task);
+        clone.execute_task(executed_task);
+
+        Ok(())
+    }
+
+    fn generate_variable(&mut self, n: String, e: &String) {
+        let mut scope = &mut self.scopes[0];
+        let mut name = n.clone().to_string();
+        name.remove(0);
+
+        if scope.contains_key(&n) {
+            Self::throw_error(format!("Variable with name '{}' has already been defined on the same scope!", n));
+        }
+
+        scope.insert(name, e.to_string());
+        println!("{:?}", self.scopes);
     }
 
     fn get_variable(&self, var: String) -> String {
         let mut value: Option<String> = Option::None;
         for scope in &self.scopes {
-            if (scope.contains_key(&var)) {
+            if scope.contains_key(&var) {
                 value = scope.get(&var).cloned();
             }
         }
 
-
         if value.is_none() {
+            println!("{:?}", self.scopes);
             Self::throw_error(format!("No variable with name '{}' has been found!", var));
         }
 
         value.unwrap()
     }
 
-    fn execute_expr(&self, expr: &Expr) -> String {
+    fn execute_expr(&mut self, expr: &Expr) -> Result<String, &'static str>  {
         match expr {
             Expr::String(s) => {
                 // STRING_IDENTIFIER_REGEX.
@@ -112,15 +132,14 @@ impl Runner {
                     self.get_variable(matched_word.to_string())
                 });
 
-                println!("s: {}", output);
-                output.to_string()
+                Ok(output.to_string())
             },
 
             _ => panic!("Invalid expression given!")
         }
     }
 
-    fn execute_block(&mut self, block: &Vec<Node>) {
+    fn execute_block(&mut self, block: &Vec<Node>) -> Result<(), &'static str> {
         self.scopes.insert(0, HashMap::new());
 
         for node in block {
@@ -129,22 +148,30 @@ impl Runner {
                     let val = self.execute_expr(expr);
                 },
 
+                Node::VariableDecl(ref n, ref e) => {
+                    let expr = self.execute_expr(e).unwrap();
+                    self.generate_variable(n.to_string(), &expr);
+                },
+
                 _ => panic!("Invalid node parsed!")
             }
         }
 
         self.scopes.remove(0);
+        Ok(())
     }
 
-    fn execute_task(mut self, executed_task: &Node) {
+    fn execute_task(mut self, executed_task: &Node) -> Result<(), &'static str> {
         match executed_task {
             // It should only be this task
             Node::Task(ref name, ref nodes) => {
-                self.execute_block(nodes)
+                self.execute_block(nodes).unwrap()
             },
 
             _ => panic!("Invalid task given!")
         }
+
+        Ok(())
     }
 
 }

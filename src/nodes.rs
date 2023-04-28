@@ -20,7 +20,8 @@ impl AST {
 pub enum Node {
     Task(String, Vec<Node>),
     DefaultTask(String),
-    Command(Expr)
+    Command(Expr),
+    VariableDecl(String, Expr),
 }
 
 #[derive(Debug, Clone)]
