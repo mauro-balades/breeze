@@ -1,5 +1,6 @@
 use clap::Parser as CLIParser;
 use std::path::Path;
+use breeze::{nodes::AST, project::ProjectInfo};
 
 use std::fs;
 
@@ -21,8 +22,10 @@ pub fn main() -> std::io::Result<()> {
     let breeze_file = Path::new(&file).join("project.breeze");
     let program_text = fs::read_to_string(breeze_file).expect("Unable to read the program file");
 
-    let expr = parser::BreezeParser::new()
+    let (project, v) = parser::BreezeParser::new()
         .parse(&program_text)
         .unwrap();
+
+    let ast = AST::new(project, v);
     Ok(())
 }
