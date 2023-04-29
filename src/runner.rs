@@ -1,42 +1,49 @@
-use std::{collections::HashMap, process::exit};
-use crate::nodes::{{ AST, Node }, Expr};
+use std::{collections::{HashMap, HashSet}, process::exit, hash::Hash, fmt};
+use crate::{nodes::{{ AST, Node }, Expr}, Args};
+use crate::functions::get_std_functions;
 
 use lazy_static;
 
-use label_logger::{{ error }};
+use label_logger::{{ error }, log};
 use regex::Regex;
 
 lazy_static! {
     static ref STRING_IDENTIFIER_REGEX: Regex = Regex::new(r"[^$]\$\{[a-zA-Z][a-zA-Z0-9_-]*\}").unwrap();
 }
 
-#[derive(Debug, Clone)]
+
+#[derive(Clone)]
 pub struct Runner {
     ast: AST,
     method: String,
 
     scopes: Vec<HashMap::<String, String>>,
-    tasks: HashMap<String, Node>
+    tasks: HashMap<String, Node>,
+
+    args: Args,
+    functions: HashMap<String, fn(HashMap<String, String>, Args, &mut Runner) -> ()>
 }
 
 impl Runner {
-    fn throw_error(error: String /* TODO: line, col, etc */) {
+    pub fn throw_error(error: String /* TODO: line, col, etc */) {
         error!(label: "Execution error", "{}", error);
         exit(0);
     }
 
-    pub fn new(ast: AST, method: String) -> Runner {
+    pub fn new(ast: AST, method: String, args: Args) -> Runner {
         Self {
             ast,
             method,
             scopes: vec![HashMap::<String, String>::new()],
             tasks: HashMap::<String, Node>::new(),
+            args,
+            functions: get_std_functions(),
         }
     }
 
     pub fn execute_ast(&mut self) -> Result<(), &'static str> {
 
-        let mut defaultTask: String = "".to_string();
+        let mut default_task: String = "".to_string();
         let mut clone = self.clone();
         for node in &mut self.ast.nodes {
             match node {
@@ -49,7 +56,7 @@ impl Runner {
                 },
     
                 Node::DefaultTask(ref name) => {
-                    if !defaultTask.is_empty() {
+                    if !default_task.is_empty() {
                         Self::throw_error("Can't defined the default task twice!".to_owned());
                     }
     
@@ -57,7 +64,7 @@ impl Runner {
                         Self::throw_error(format!("Can't use task '{}' because it's not defined!", name));
                     }
     
-                    defaultTask = name.to_string();
+                    default_task = name.to_string();
                 },
 
                 Node::VariableDecl(ref n, ref e) => {
@@ -70,11 +77,11 @@ impl Runner {
         }
     
         if self.method == "$default" {
-            if defaultTask.is_empty() {
+            if default_task.is_empty() {
                 Self::throw_error("No default task has been set for project!".to_owned());
             }
     
-            self.method = defaultTask;
+            self.method = default_task;
         }
     
         if !self.tasks.contains_key(&self.method) {
@@ -82,13 +89,11 @@ impl Runner {
         }
     
         let executed_task = self.tasks.get(&self.method).unwrap();
-        clone.execute_task(executed_task);
-
-        Ok(())
+        return clone.execute_task(executed_task);
     }
 
-    fn generate_variable(&mut self, n: String, e: &String) {
-        let mut scope = &mut self.scopes[0];
+    pub fn generate_variable(&mut self, n: String, e: &String) {
+        let scope = &mut self.scopes[0];
         let mut name = n.clone().to_string();
         name.remove(0);
 
@@ -97,10 +102,9 @@ impl Runner {
         }
 
         scope.insert(name, e.to_string());
-        println!("{:?}", self.scopes);
     }
 
-    fn get_variable(&self, var: String) -> String {
+    pub fn get_variable(&self, var: String) -> String {
         let mut value: Option<String> = Option::None;
         for scope in &self.scopes {
             if scope.contains_key(&var) {
@@ -119,7 +123,7 @@ impl Runner {
     fn execute_expr(&mut self, expr: &Expr) -> Result<String, &'static str>  {
         match expr {
             Expr::String(s) => {
-                // STRING_IDENTIFIER_REGEX.
+                // THIS IS NOT BEING DETECTED!
                 let output = STRING_IDENTIFIER_REGEX.replace_all(s, |captures: &regex::Captures| {
                     let matched_word = &mut captures[0].to_string(); // get the matched word
 
@@ -144,8 +148,28 @@ impl Runner {
 
         for node in block {
             match node {
-                Node::Command(expr) => {
-                    let val = self.execute_expr(expr);
+                Node::FunctionCall(n, args) => {
+                    let mut argv = HashMap::new();
+
+                    for a in args {
+                        if argv.contains_key(&a.0) {
+                            Self::throw_error("Arguments has been repeated on this call!".to_owned());
+                        }
+
+                        argv.insert(a.0.clone(), self.execute_expr(&a.1).unwrap());
+                    }
+
+                    if self.functions.contains_key(n) {
+                        let f = self.functions.get(n).unwrap();
+                        f(argv, self.args.clone(), self);
+                    } else {
+                        Self::throw_error(format!("Coudn't find function with name '{}'", n))
+                    }
+                },
+
+                Node::Message(ref e) => {
+                    let expr = self.execute_expr(e).unwrap();
+                    log!("{}", expr);
                 },
 
                 Node::VariableDecl(ref n, ref e) => {

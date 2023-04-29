@@ -1,25 +1,14 @@
 
-use clap::Parser as CLIParser;
 use std::path::Path;
-use breeze::{nodes::AST, project::ProjectInfo, runner::Runner, parser};
+use breeze::{nodes::AST, project::ProjectInfo, runner::Runner, parser, Args};
+use clap::Parser;
 use label_logger::{info, log, success};
 
 use std::fs;
 
-/// Simple program to greet a person
-#[derive(CLIParser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
-    #[arg(index = 1, default_value = "$default")]
-    method: String,
-
-    #[arg(short, long, default_value = "./")]
-    project: String,
-}
-
 pub fn main() -> std::io::Result<()> {
     let args = Args::parse();
-    let file = args.project;
+    let file = args.project.clone();
 
     let breeze_file = Path::new(&file).join("project.breeze");
     let program_text = fs::read_to_string(breeze_file).expect("Unable to read the program file");
@@ -31,6 +20,7 @@ pub fn main() -> std::io::Result<()> {
     let ast = AST::new(project, v);
     success!(label: "Building", "Project {} with version '{}'", ast.project.name, ast.project.version);
 
-    Runner::new(ast, args.method).execute_ast();
+    let m = args.method.clone();
+    let _ = Runner::new(ast, m, args).execute_ast();
     Ok(())
 }

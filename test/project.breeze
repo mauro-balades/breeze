@@ -1,8 +1,7 @@
 project test version "0.0.1";
 
-set $balls "hello"
 task build {
-    exec "awdd  ${balls}"
+    message "${myStdout}";
 }
 
-default_task build
+default_task build;

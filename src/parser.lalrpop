@@ -5,7 +5,9 @@ use crate::project::ProjectInfo;
 grammar;
 
 RootNodes: Node = {
-    Task, DefaultTask, VariableDecl
+    Task,
+    DefaultTask,
+    VariableDecl,
 }
 
 RootHeader: ProjectInfo = {
@@ -13,16 +15,17 @@ RootHeader: ProjectInfo = {
         => ProjectInfo::from((name, version))
 }
 
-Command: Node = {
-    "exec" <s:StringExpr> => Node::Command(s)
-}
-
 Statement: Node = {
-    Command,
+    FunctionCall,
+    Message,
 }
 
 VariableDecl: Node = {
-    "set" <name:variable> <e:Expr> => Node::VariableDecl(name, e)
+    "set" <name:variable> <e:Expr> ";" => Node::VariableDecl(name, e)
+}
+
+Message: Node = {
+    "message" <e:Expr> ";" => Node::Message(e)
 }
 
 Block: Vec<Node> = {
@@ -37,8 +40,24 @@ Expr: Expr = {
     StringExpr
 }
 
+FunctionCall: Node = {
+    <i:ident> "(" <args:CallArguments> ")" ";" => Node::FunctionCall(i, args)
+}
+
+// this is not being parsed correctly!
+CallArgument: (String, Expr) = {
+    <i:ident> "=" <v:Expr> => (i, v)
+}
+
+CallArguments: Vec<(String, Expr)> = {
+     <mut params: (<CallArgument> ",")*> <last: (<CallArgument>)?> => {
+        params.extend(last.clone());
+        params
+    },
+}
+
 DefaultTask: Node = {
-    "default_task" <name:ident> => Node::DefaultTask(name)
+    "default_task" <name:ident> ";" => Node::DefaultTask(name)
 }
 
 Task: Node = {

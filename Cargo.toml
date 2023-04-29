@@ -12,3 +12,4 @@ label-logger = "0.2.0"
 lalrpop-util = {version = "0.19.10", features = ["lexer"]}
 lazy_static = "1.4.0"
 regex = "1"
+subprocess = "0.2.9"
