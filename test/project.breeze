@@ -1,7 +1,8 @@
 project test version "0.0.1";
 
 task build {
-    message "${myStdout}";
+    exec(cmd="git --help", stdout="identifier");
+    message "${identifier}";
 }
 
 default_task build;

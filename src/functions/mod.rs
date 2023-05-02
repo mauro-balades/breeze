@@ -16,15 +16,19 @@ pub fn exec(argv: HashMap<String, String>, args: Args, runner: &mut Runner) -> (
         warn!(label: "[Debug]:", "Executing '{}' as a command from shell", cmd);
     }
 
-    let out = Exec::cmd(cmd)
+    let out = Exec::shell(cmd)
         .stdout(Redirection::Pipe)
         .capture();
+
 
     if out.is_err() {
         if argv.contains_key("stderr") {
             runner.generate_variable(argv.get("stderr").unwrap().to_owned(), &out.unwrap_err().to_string());
         }
-        
+
+        if argv.contains_key("success") {
+            runner.generate_variable(argv.get("success").unwrap().to_owned(), &"0".to_string());
+        }
     } else {
         let o = out.unwrap();
         if argv.contains_key("stdout") {
@@ -33,6 +37,10 @@ pub fn exec(argv: HashMap<String, String>, args: Args, runner: &mut Runner) -> (
 
         if argv.contains_key("stderr") {
             runner.generate_variable(argv.get("stderr").unwrap().to_owned(), &o.stderr_str());
+        }
+
+        if argv.contains_key("success") {
+            runner.generate_variable(argv.get("success").unwrap().to_owned(), &o.success().to_string());
         }
     }
 }

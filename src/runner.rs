@@ -1,16 +1,15 @@
-use std::{collections::{HashMap, HashSet}, process::exit, hash::Hash, fmt};
+use std::{collections::{HashMap}, process::exit};
 use crate::{nodes::{{ AST, Node }, Expr}, Args};
 use crate::functions::get_std_functions;
 
 use lazy_static;
 
-use label_logger::{{ error }, log};
+use label_logger::{{ error }, info};
 use regex::Regex;
 
 lazy_static! {
-    static ref STRING_IDENTIFIER_REGEX: Regex = Regex::new(r"[^$]\$\{[a-zA-Z][a-zA-Z0-9_-]*\}").unwrap();
+    static ref STRING_IDENTIFIER_REGEX: Regex = Regex::new(r#"(^$|^)\$\{[a-zA-Z][a-zA-Z0-9_-]*\}"#).unwrap();
 }
-
 
 #[derive(Clone)]
 pub struct Runner {
@@ -26,7 +25,7 @@ pub struct Runner {
 
 impl Runner {
     pub fn throw_error(error: String /* TODO: line, col, etc */) {
-        error!(label: "Execution error", "{}", error);
+        error!(label: "Exec error", "{}", error);
         exit(0);
     }
 
@@ -95,7 +94,10 @@ impl Runner {
     pub fn generate_variable(&mut self, n: String, e: &String) {
         let scope = &mut self.scopes[0];
         let mut name = n.clone().to_string();
-        name.remove(0);
+
+        if name.starts_with("$") {
+            name.remove(0);
+        }
 
         if scope.contains_key(&n) {
             Self::throw_error(format!("Variable with name '{}' has already been defined on the same scope!", n));
@@ -113,7 +115,6 @@ impl Runner {
         }
 
         if value.is_none() {
-            println!("{:?}", self.scopes);
             Self::throw_error(format!("No variable with name '{}' has been found!", var));
         }
 
@@ -124,19 +125,18 @@ impl Runner {
         match expr {
             Expr::String(s) => {
                 // THIS IS NOT BEING DETECTED!
-                let output = STRING_IDENTIFIER_REGEX.replace_all(s, |captures: &regex::Captures| {
+                let output = STRING_IDENTIFIER_REGEX.replace_all(&s, |captures: &regex::Captures| {
                     let matched_word = &mut captures[0].to_string(); // get the matched word
 
-                    matched_word.remove(0);
                     matched_word.remove(0);
                     matched_word.remove(0);
 
                     matched_word.pop();
 
                     self.get_variable(matched_word.to_string())
-                });
+                }).to_string();
 
-                Ok(output.to_string())
+                Ok(output)
             },
 
             _ => panic!("Invalid expression given!")
@@ -169,7 +169,15 @@ impl Runner {
 
                 Node::Message(ref e) => {
                     let expr = self.execute_expr(e).unwrap();
-                    log!("{}", expr);
+                    let lines = expr.lines();
+
+                    if expr.contains("\n") {
+                        for l in lines {
+                            info!(label: "==>", "{}", l);
+                        }
+                    } else {
+                        info!(label: "==>", "{}", expr);
+                    }
                 },
 
                 Node::VariableDecl(ref n, ref e) => {
@@ -188,7 +196,7 @@ impl Runner {
     fn execute_task(mut self, executed_task: &Node) -> Result<(), &'static str> {
         match executed_task {
             // It should only be this task
-            Node::Task(ref name, ref nodes) => {
+            Node::Task(ref _name, ref nodes) => {
                 self.execute_block(nodes).unwrap()
             },
 

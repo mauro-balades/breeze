@@ -70,7 +70,7 @@ pub Breeze: (ProjectInfo, Vec<Node>) = {
 }
 
 Num: i64 = r"[0-9]+" => i64::from_str(<>).unwrap();
-string: String = r#"".*""# => {
+string: String = r#""(\\\\|\\"|[^"\\])*""# => {
     let mut chars = <>.chars();
     chars.next();
     chars.next_back();
