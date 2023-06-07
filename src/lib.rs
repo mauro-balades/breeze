@@ -8,6 +8,7 @@ pub mod nodes;
 pub mod runner;
 pub mod project;
 pub mod functions;
+pub mod langs;
 
 lalrpop_mod!(pub parser); // synthesized by LALRPOP
 

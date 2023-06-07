@@ -20,7 +20,8 @@ pub struct Runner {
     tasks: HashMap<String, Node>,
 
     args: Args,
-    functions: HashMap<String, fn(HashMap<String, String>, Args, &mut Runner) -> ()>
+    functions: HashMap<String, fn(HashMap<String, String>, Args, &mut Runner) -> ()>,
+    
 }
 
 impl Runner {
@@ -167,13 +168,18 @@ impl Runner {
                     }
                 },
 
+                Node::LangCall(ref lang, ref ident, ref args) => {
+                    let name = format!("@{}.{}", lang, ident);
+                    todo!()
+                }   
+
                 Node::Message(ref e) => {
                     let expr = self.execute_expr(e).unwrap();
                     let lines = expr.lines();
 
                     if expr.contains("\n") {
                         for l in lines {
-                            info!(label: "==>", "{}", l);
+                            info!(label: "=>", "{}", l);
                         }
                     } else {
                         info!(label: "==>", "{}", expr);
