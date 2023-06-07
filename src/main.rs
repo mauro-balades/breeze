@@ -1,8 +1,8 @@
 
 use std::path::Path;
-use breeze::{nodes::AST, project::ProjectInfo, runner::Runner, parser, Args};
+use breeze::{nodes::AST, runner::Runner, parser, Args};
 use clap::Parser;
-use label_logger::{info, log, success};
+use label_logger::{success};
 
 use std::fs;
 
