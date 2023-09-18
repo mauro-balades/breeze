@@ -22,7 +22,8 @@ pub enum Node {
     DefaultTask(String),
     VariableDecl(String, Expr),
     FunctionCall(String, Vec<(String, Expr)>),
-    Message(Expr)
+    Message(Expr),
+    LangCall(String, String, Vec<(String, Expr)>),
 }
 
 #[derive(Debug, Clone)]

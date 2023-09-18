@@ -1,7 +1,7 @@
 project test version "0.0.1";
 
 task build {
-    exec(cmd="git --help");
+    @python.install_requirements();
 }
 
 default_task build;

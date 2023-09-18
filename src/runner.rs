@@ -1,6 +1,7 @@
 use std::{collections::{HashMap}, process::exit};
 use crate::{nodes::{{ AST, Node }, Expr}, Args};
 use crate::functions::get_std_functions;
+use crate::langs::{ Language };
 
 use lazy_static;
 
@@ -20,7 +21,10 @@ pub struct Runner {
     tasks: HashMap<String, Node>,
 
     args: Args,
-    functions: HashMap<String, fn(HashMap<String, String>, Args, &mut Runner) -> ()>
+    functions: HashMap<String, fn(HashMap<String, String>, Args, &mut Runner) -> ()>,
+
+    languages: Vec<Language>,
+    
 }
 
 impl Runner {
@@ -37,6 +41,7 @@ impl Runner {
             tasks: HashMap::<String, Node>::new(),
             args,
             functions: get_std_functions(),
+            languages: vec![],
         }
     }
 
@@ -167,13 +172,30 @@ impl Runner {
                     }
                 },
 
+                Node::LangCall(ref lang, ref ident, ref args) => {
+                    let name = format!("@{}.{}", lang, ident);
+                    
+                    let mut found_lang = Option::None;
+                    for lang_dir in &self.languages {
+                        if lang_dir.name == lang.to_string() {
+                            found_lang = Some(lang_dir);
+                        }
+                    }
+
+                    if found_lang == Option::None {
+                        Self::throw_error(format!("Language directory '{}' not found!", lang));
+                    }
+
+                    todo!()
+                }   
+
                 Node::Message(ref e) => {
                     let expr = self.execute_expr(e).unwrap();
                     let lines = expr.lines();
 
                     if expr.contains("\n") {
                         for l in lines {
-                            info!(label: "==>", "{}", l);
+                            info!(label: "=>", "{}", l);
                         }
                     } else {
                         info!(label: "==>", "{}", expr);

@@ -17,6 +17,7 @@ RootHeader: ProjectInfo = {
 
 Statement: Node = {
     FunctionCall,
+    LangCall,
     Message,
 }
 
@@ -38,6 +39,10 @@ StringExpr: Expr = {
 
 Expr: Expr = {
     StringExpr
+}
+
+LangCall: Node = {
+    "@" <lang:ident> "." <i:ident> "(" <args:CallArguments> ")" ";" => Node::LangCall(lang, i, args)
 }
 
 FunctionCall: Node = {
