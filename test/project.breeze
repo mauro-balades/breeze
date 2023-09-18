@@ -1,6 +1,7 @@
 project test version "0.0.1";
 
 task build {
+    @python.check_device();
     @python.install_requirements();
 }
 

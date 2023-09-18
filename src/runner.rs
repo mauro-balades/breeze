@@ -1,7 +1,7 @@
 use std::{collections::{HashMap}, process::exit};
 use crate::{nodes::{{ AST, Node }, Expr}, Args};
 use crate::functions::get_std_functions;
-use crate::langs::{ Language };
+use crate::langs::{ Language, get_core_langs };
 
 use lazy_static;
 
@@ -29,7 +29,9 @@ pub struct Runner {
 
 impl Runner {
     pub fn throw_error(error: String /* TODO: line, col, etc */) {
-        error!(label: "Exec error", "{}", error);
+        for line in error.lines() {
+            error!(label: "Error", "{}", line);
+        }
         exit(0);
     }
 
@@ -41,7 +43,7 @@ impl Runner {
             tasks: HashMap::<String, Node>::new(),
             args,
             functions: get_std_functions(),
-            languages: vec![],
+            languages: get_core_langs(),
         }
     }
 
@@ -186,7 +188,21 @@ impl Runner {
                         Self::throw_error(format!("Language directory '{}' not found!", lang));
                     }
 
-                    todo!()
+                    let lang = found_lang.unwrap();
+                    if !lang.functions.contains_key(ident) {
+                        Self::throw_error(format!("Function '{}' not found in language '{}'!", ident, lang.name));
+                    }
+
+                    let f = lang.functions.get(ident).unwrap();
+                    let mut argv = HashMap::new();
+                    for a in args {
+                        if argv.contains_key(&a.0) {
+                            Self::throw_error("Arguments has been repeated on this call!".to_owned());
+                        }
+
+                        argv.insert(a.0.clone(), self.clone().execute_expr(&a.1).unwrap());
+                    }
+                    f(argv, self.args.clone(), self);
                 }   
 
                 Node::Message(ref e) => {
@@ -228,4 +244,17 @@ impl Runner {
         Ok(())
     }
 
+    pub fn check_arguments(givenArgs: &HashMap<String, String>, requiredArgs: HashMap<&str, bool>, called_method: &str) {
+        for (name, required) in givenArgs {
+            if !requiredArgs.contains_key(name.as_str()) {
+                Self::throw_error(format!("Argument '{}' is not registered for method '{}'!", name, called_method));
+            }
+        }
+
+        for (name, required) in requiredArgs {
+            if required && !givenArgs.contains_key(name) {
+                Self::throw_error(format!("Argument '{}' is required for method '{}'!", name, called_method));
+            }
+        }
+    }
 }
