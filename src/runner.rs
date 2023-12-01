@@ -2,6 +2,7 @@ use std::{collections::{HashMap}, process::exit};
 use crate::{nodes::{{ AST, Node }, Expr}, Args};
 use crate::functions::get_std_functions;
 use crate::langs::{ Language, get_core_langs };
+use crate::{cache};
 
 use lazy_static;
 
@@ -24,7 +25,7 @@ pub struct Runner {
     functions: HashMap<String, fn(HashMap<String, String>, Args, &mut Runner) -> ()>,
 
     languages: Vec<Language>,
-    
+    pub cache: cache::Cache,
 }
 
 impl Runner {
@@ -44,7 +45,35 @@ impl Runner {
             args,
             functions: get_std_functions(),
             languages: get_core_langs(),
+            cache: cache::Cache::new()
         }
+    }
+
+    pub fn initialize_data(&mut self) {
+        // create .breeze folder if it doesn't exist
+        let breeze_folder = ".breeze";
+        if !std::path::Path::new(breeze_folder).exists() {
+            std::fs::create_dir(breeze_folder).unwrap();
+        }
+
+        // create cache file if it doesn't exist
+        let cache_file = format!("{}/cache.json", breeze_folder);
+        if !std::path::Path::new(&cache_file).exists() {
+            std::fs::write(&cache_file, serde_json::to_string(&self.cache).unwrap()).unwrap();
+        }
+    }
+
+    pub fn save_data(&mut self) {
+        let breeze_folder = ".breeze";
+        let cache_file = format!("{}/cache.json", breeze_folder);
+        std::fs::write(&cache_file, serde_json::to_string(&self.cache).unwrap()).unwrap();
+    }
+
+    pub fn load_data(&mut self) {
+        let breeze_folder = ".breeze";
+        let cache_file = format!("{}/cache.json", breeze_folder);
+        let cache_file = std::fs::read_to_string(&cache_file).unwrap();
+        self.cache = serde_json::from_str(&cache_file).unwrap();
     }
 
     pub fn execute_ast(&mut self) -> Result<(), &'static str> {
@@ -235,7 +264,9 @@ impl Runner {
         match executed_task {
             // It should only be this task
             Node::Task(ref _name, ref nodes) => {
-                self.execute_block(nodes).unwrap()
+                let res = self.execute_block(nodes).unwrap();
+                self.save_data();
+                res
             },
 
             _ => panic!("Invalid task given!")
